@@ -98,18 +98,33 @@
 
     sendBtn.addEventListener('click', e => {
       const form = new FormData(bodyForm)
+      let contentType = null
       let _body = false
       switch (formBodyType.value) {
-        case 'json': _body = {}
-        case 'form-data': _body = new FormData()
+        case 'json': {
+          contentType = 'application/json'
+          _body = {}
+          break
+        }
+        case 'form-data': {
+          contentType = 'multipart/form-data'
+          _body = new FormData()
+          break
+        }
       }
       if (_body) {
         for (let k = 1; k <= i; k++) {
           const key = form.get(`${k}_key`)
           const value = form.get(`${k}_value`)
           switch (formBodyType.value) {
-            case 'json': _body[key] = value
-            case 'form-data': _body.append(key, value)
+            case 'json': {
+              _body[key] = value
+              break
+            }
+            case 'form-data': {
+              _body.append(key, value)
+              break
+            }
           }
         }
       }
@@ -119,9 +134,13 @@
       //   res.innerHTML = 'Please enter a valid URL'
       //   return
       // }
+      console.log(contentType)
       const m = _fetch(url.value, {
         method: method.value,
-        body: !_body ? null : _body
+        body: !_body ? null : _body,
+        headers: {
+          'Content-Type': contentType
+        }
       })
       m.res
       .then(r => {
