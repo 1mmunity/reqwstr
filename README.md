@@ -1,4 +1,5 @@
 # Reqwstr
+![Reqwstr Preview](https://i.postimg.cc/QC8qb8GH/image.png)
 ```
 npm i -g reqwstr
 ```
