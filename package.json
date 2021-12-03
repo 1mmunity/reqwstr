@@ -1,0 +1,28 @@
+{
+  "name": "reqwstr",
+  "version": "1.0.0",
+  "description": "A debug tool to send http requests.",
+  "main": "bin/reqwstrnpm ",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "preferGlobal": true,
+  "bin": {
+    "reqwstr": "./bin/reqwstr"
+  },
+  "keywords": [
+    "request",
+    "post",
+    "http",
+    "get",
+    "delete",
+    "put"
+  ],
+  "author": "Adriel J.",
+  "license": "MIT",
+  "dependencies": {
+    "colors": "^1.4.0",
+    "express": "^4.17.1",
+    "yargs": "^17.3.0"
+  }
+}

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <link rel='stylesheet' href='./style.css' />
+  <title>Reqwstr</title>
+</head>
+<body>
+  <!-- Main Body -->
+  <div class="p-4">
+    <div class='m-0 p-0 pb-5 text-center'>
+      <span class='text-secondary'>This site can also be served as static</span>
+      <div class='mb-2'>
+        <a href='https://github.com/1mmunity/reqwstr/lib/index.html'>
+          https://github.com/1mmunity/reqwstr/lib/index.html
+        </a>
+      </div>
+      <h1 class="display-1">Reqwstr</h1>
+      <p class='h6'>API Debugging tool with ease.</p>
+    </div>
+    <div class="input-group pb-2 gap-2">
+      <div>
+        <select class="form-select text-primary border border-primary" id="method">
+          <option selected value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="PUT">PUT</option>
+          <option value="PATCH">PATCH</option>
+          <option value="DELETE">DELETE</option>
+        </select>
+      </div>
+      <input type="text" class="form-control rounded" placeholder="URL" id='url' required>
+      <button class="btn btn-primary d-block w-full rounded" type="button" id='submit'>Send</button>
+    </div>
+    <div class='mb-4'>
+      <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+        Toggle Reveal Body
+      </button>
+      <span>(Empty key-value will be ignored.)</span>
+      <div class='collapse' id='collapseExample'>
+        <div class='row pt-2 input-group m-0 p-0 pb-2'>
+          <select class="form-select col" id="form-body-type" aria-label="Example select with button addon">
+            <option value="none" selected>No Body</option>
+            <option value="json">JSON</option>
+            <option value="form-data">Form Data</option>
+          </select>
+          <button class='btn btn-primary col-2' id='add-row'>Add Row</button>
+        </div>
+        <form id='body-form'>
+          <table class="table table-bordered">
+            <thead class='bg-light'>
+              <tr>
+                <th scope="col" class='col-4'>Key</th>
+                <th scope="col">Value</th>
+              </tr>
+            </thead>
+            <tbody id='tbody'>
+              <tr>
+                <td>
+                  <input type="text" name='1_key' class="form-control rounded border-0 shadow-none" placeholder="KEY">
+                </td>
+                <td>
+                  <textarea type="text" name='1_value' class="form-control rounded border-0 shadow-none" placeholder="VALUE" rows='1'></textarea>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </form>
+      </div>
+    </div>
+    <!-- <div class="form-floating">
+      <textarea class="form-control" id="floatingTextarea2" style="height: 100px"></textarea>
+      <label for="floatingTextarea2">JSON</label>
+    </div> -->
+
+    <div class='pb-1'>
+      <span class='m-0 p-0' id='status'>{Status}</span>
+      <span class='m-0 p-0 mx-2' id='exec-time'>{Execution Time}</span>
+      <span class='m-0 p-0' id='res-size'>{Response Size}</span>
+    </div>
+    <textarea class='input-group form-control py-2' rows='20' disabled id='res'></textarea>
+  <script>
+    const tbody = document.getElementById('tbody')
+    const addRow = document.getElementById('add-row')
+    const sendBtn = document.getElementById('submit')
+    const bodyForm = document.getElementById('body-form')
+    const formBodyType = document.getElementById('form-body-type')
+    const url = document.getElementById('url')
+    const method = document.getElementById('method')
+
+    const status = document.getElementById('status')
+    const execTime = document.getElementById('exec-time')
+    const resSize = document.getElementById('res-size')
+    const res = document.getElementById('res')
+    let i = 1
+
+    sendBtn.addEventListener('click', e => {
+      const form = new FormData(bodyForm)
+      let _body = false
+      switch (formBodyType.value) {
+        case 'json': _body = {}
+        case 'form-data': _body = new FormData()
+      }
+      if (_body) {
+        for (let k = 1; k <= i; k++) {
+          const key = form.get(`${k}_key`)
+          const value = form.get(`${k}_value`)
+          switch (formBodyType.value) {
+            case 'json': _body[key] = value
+            case 'form-data': _body.append(key, value)
+          }
+        }
+      }
+      const regexp =  /^(?:(?:https?|ftp):\/\/)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/;
+      if (!regexp.test(url.value)) {
+        res.innerHTML = 'Please enter a valid URL'
+        return
+      }
+      const m = _fetch(url.value, {
+        method: method.value,
+        body: !_body ? null : _body
+      })
+      m.res
+      .then(r => {
+        status.innerHTML = `${r.status}`
+        execTime.innerHTML = `${m.time.toFixed(3)}ms`
+        resSize.innerHTML = `${r.headers.get('Content-Length')} Characters`
+        return r
+      })
+      .then(r => r.json())
+      .then(r => {
+        res.innerHTML = JSON.stringify(r, null, 2)
+      })
+      .catch(r => {
+        res.innerHTML = r
+      })
+    })
+    addRow.addEventListener('click', e => {
+      i += 1
+      const tr = document.createElement('tr')
+      tr.innerHTML =
+      `<td>
+        <input type="text" name="${i}_key" class="form-control rounded border-0 shadow-none" placeholder="KEY">
+      </td>
+      <td>
+        <textarea type="text" name="${i}_value" class="form-control rounded border-0 shadow-none" placeholder="VALUE" rows='1'></textarea>
+      </td>`
+      tbody.appendChild(tr)
+    })
+
+
+    function _fetch(...t) {
+      const s = performance.now()
+      const res = fetch(...t)
+      const e = performance.now()
+      return {
+        res,
+        time: e-s
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+</body>
+</html>

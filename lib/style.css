@@ -1,0 +1,12 @@
+.title {
+  color: #6610f2
+}
+
+input[type=text] {
+  width: 100%;
+}
+
+td {
+  padding: 0 !important;
+  margin: 0;
+}
